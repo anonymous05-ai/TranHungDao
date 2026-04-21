@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Điểm du lịch Trần Hưng Đạo</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+<style>
+body { margin:0; }
+#panorama { width:100vw; height:100vh; }
+
+.title {
+  position:absolute;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.5);
+  color:#fff;
+  padding:10px 20px;
+  border-radius:10px;
+  z-index:999;
+}
+
+/* Mũi tên nằm dưới đất giống Street View */
+.street-arrow {
+  width:60px;
+  height:60px;
+  background:url('https://cdn-icons-png.flaticon.com/512/271/271267.png') no-repeat center;
+  background-size:contain;
+  transform-origin:center;
+  opacity:0.9;
+}
+
+.street-arrow:hover {
+  transform:scale(1.2);
+  opacity:1;
+}
+</style>
+</head>
+
+<body>
+<div class="title">Điểm du lịch Trần Hưng Đạo</div>
+<div id="panorama"></div>
+
+<script>
+const viewer = pannellum.viewer('panorama', {
+  default:{
+    firstScene:'anh1',
+    sceneFadeDuration:1000
+  },
+
+  scenes:{
+    anh1:{
+      type:'equirectangular',
+      panorama:'./anh1.jpg',
+      hotSpots:[arrowGround(180,'anh4')]
+    },
+
+    anh2:{
+      type:'equirectangular',
+      panorama:'./anh2.jpg',
+      hotSpots:[
+        arrowGround(180,'anh4'),
+        arrowGround(0,'anh1'),
+        
+      ]
+    },
+
+    anh3:{
+      type:'equirectangular',
+      panorama:'./anh3.jpg',
+      hotSpots:[
+        arrowGround(0,'anh4'),
+        arrowGround(180,'anh1')
+      ]
+    },
+
+    anh4:{
+      type:'equirectangular',
+      panorama:'./anh6.jpg',
+      hotSpots:[
+        arrowGround(0,'anh1'),
+        arrowGround(180,'anh5'),
+        arrowGround(90,'anh2'),
+        arrowGround(270,'anh3')
+      ]
+    },
+
+    anh5:{
+      type:'equirectangular',
+      panorama:'./anh5.jpg',
+      hotSpots:[arrowGround(180,'anh4')]
+    }
+  }
+});
+
+// Mũi tên dưới đất + xoay theo hướng
+function arrowGround(yaw, target){
+  return {
+    pitch: -25, // đặt xuống gần mặt đất
+    yaw: yaw,
+    type: 'info',
+    cssClass: 'street-arrow',
+
+    createTooltipFunc: function(div){
+      div.style.transform = `rotate(${yaw}deg)`;
+      div.onclick = function(){
+        moveWithZoom(target);
+      }
+    }
+  }
+}
+
+// Hiệu ứng zoom giống Google Street View
+function moveWithZoom(sceneId){
+  let fov = viewer.getHfov();
+
+  // zoom vào
+  let zoomIn = setInterval(()=>{
+    fov -= 2;
+    viewer.setHfov(fov);
+    if(fov <= 40){
+      clearInterval(zoomIn);
+
+      // chuyển cảnh
+      viewer.loadScene(sceneId, null, null, 800);
+
+      // zoom ra
+      let zoomOut = setInterval(()=>{
+        fov += 2;
+        viewer.setHfov(fov);
+        if(fov >= 100){
+          clearInterval(zoomOut);
+        }
+      },10);
+    }
+  },10);
+}
+</script>
+
+</body>
+</html>
